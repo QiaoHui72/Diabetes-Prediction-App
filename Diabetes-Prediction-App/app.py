@@ -166,10 +166,36 @@ h1, h2, h3 { color: #101e35; letter-spacing: -.025em; }
     [data-testid="stTabs"] [role="tab"] p { font-size: 17px !important; }
     .result .label { font-size: 26px; }
 }
+
+/* The page uses a light palette in every tab, including dark viewer mode. */
+.stApp [data-testid="stMarkdownContainer"] { color: #14233e; }
+.stApp [data-testid="stCaptionContainer"],
+.stApp [data-testid="stCaptionContainer"] p { color: #536984 !important; }
+.stApp [data-testid="stMetricLabel"],
+.stApp [data-testid="stMetricValue"],
+.stApp [data-testid="stMetricLabel"] p { color: #14233e !important; }
+.stApp [data-testid="stExpander"] summary { color: #14233e !important; }
+.stApp [data-testid="stJson"], .stApp [data-testid="stJson"] * {
+    background-color: #f1f6ff !important; color: #14233e !important;
+}
+.stApp [data-testid="stMultiSelect"] [data-baseweb="select"] > div,
+.stApp [data-testid="stMultiSelect"] input {
+    background-color: #fff !important; color: #14233e !important;
+}
+.stApp [data-testid="stCheckbox"] label p { color: #14233e !important; }
 </style>
 """,
     unsafe_allow_html=True,
 )
+
+def light_dataframe(frame, **kwargs):
+    styled = frame.style.set_properties(**{
+        "background-color": "#ffffff", "color": "#14233e",
+    }).set_table_styles([
+        {"selector": "th", "props": [("background-color", "#edf4ff"), ("color", "#14233e")]},
+    ])
+    return st.dataframe(styled, **kwargs)
+
 
 DATA_FILE = os.path.join(os.path.dirname(os.path.abspath(__file__)), "diabetes.csv")
 
@@ -349,10 +375,10 @@ with tab_data:
     m3.metric("With diabetes", f"{df[target].mean() * 100:.0f}%")
 
     st.markdown("**Data table**")
-    st.dataframe(df, height=300)
+    light_dataframe(df, height=300)
 
     st.markdown("**Summary numbers**")
-    st.dataframe(df.describe().T.round(2))
+    light_dataframe(df.describe().T.round(2))
 
     st.markdown("**Missing values**")
     zero_counts = {c: int((df[c] == 0).sum()) for c in ZERO_MEANS_MISSING if c in df.columns}
@@ -360,7 +386,7 @@ with tab_data:
         "In this dataset, a 0 in these columns is impossible (for example, a blood pressure of 0), "
         "so it is treated as missing and filled with the median."
     )
-    st.dataframe(
+    light_dataframe(
         pd.DataFrame({"Zeros treated as missing": zero_counts})
     )
 
@@ -402,7 +428,7 @@ with tab_models:
         "Precision (%)": round(r['precision']*100,2),
         "F1": round(r['f1'],3), "ROC AUC": round(r['auc'],3),
     } for name,r in results.items()])
-    st.dataframe(table, hide_index=True)
+    light_dataframe(table, hide_index=True)
     st.download_button("Download evaluation results (.csv)", table.to_csv(index=False), "model_evaluation.csv", "text/csv")
     st.image(model_chart("comparison", (root / "trained_models.pkl").read_bytes()), use_container_width=True)
     st.success(f"Selected by cross-validation: **{best_name}**")
