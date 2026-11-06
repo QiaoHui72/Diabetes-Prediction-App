@@ -120,7 +120,7 @@ h1, h2, h3 { color: #101e35; letter-spacing: -.025em; }
 [data-testid="stSelectbox"] input {
     background: #fff !important; color: #14233e !important;
     -webkit-text-fill-color: #14233e !important;
-    font-size: 21px !important; padding-left: 18px !important;
+    font-size: 20px !important; padding-left: 18px !important;
     color-scheme: light;
 }
 [data-testid="stSelectbox"] button {
@@ -139,6 +139,33 @@ h1, h2, h3 { color: #101e35; letter-spacing: -.025em; }
     background: #e8f1ff !important;
 }
 [data-testid="stTabs"] [role="tablist"] { border-bottom: none !important; }
+
+/* Reference typography: consistent font and sizes, independent of theme defaults. */
+.stApp, .stApp p, .stApp label, .stApp input, .stApp button, .stApp h1,
+.stApp h2, .stApp h3, .stApp summary {
+    font-family: Arial, Helvetica, sans-serif !important;
+}
+.hero h1 { font-size: 52px !important; line-height: 1.15; }
+.hero p { font-size: 22px !important; }
+.st-key-card_details h3 { font-size: 28px !important; }
+[data-testid="stWidgetLabel"] p { font-size: 17px !important; }
+[data-testid="stTabs"] [role="tab"] p { font-size: 20px !important; }
+[data-testid="stTabs"] [role="tablist"]::after { display: none !important; }
+[data-testid="stTabs"] .react-aria-SelectionIndicator { display: none !important; }
+[data-testid="stTabs"] [role="tab"][data-selected] {
+    background: #fff; color: #075ced; box-shadow: 0 4px 12px #1165df12;
+}
+.bmi-note { font-size: 17px; }
+.result .label { font-size: 36px; }
+.result .sub, .summary-line { font-size: 20px; }
+.stButton > button p { font-size: 22px !important; }
+@media (max-width: 640px) {
+    .hero h1 { font-size: 32px !important; }
+    .hero p { font-size: 17px !important; }
+    [data-testid="stWidgetLabel"] p { font-size: 15px !important; }
+    [data-testid="stTabs"] [role="tab"] p { font-size: 17px !important; }
+    .result .label { font-size: 26px; }
+}
 </style>
 """,
     unsafe_allow_html=True,
@@ -240,14 +267,14 @@ with tab_predict:
         )
 
         c1, c2 = st.columns(2)
-        glucose = c1.number_input("Glucose (mg/dL)", min_value=40.0, max_value=400.0, value=110.0, step=1.0)
+        glucose = c1.number_input("Glucose (mg/dL)", min_value=40.0, max_value=400.0, value=110.0, step=1.0, format="%g")
         bp = c2.number_input(
-            "Blood pressure, diastolic (mmHg)", min_value=30.0, max_value=140.0, value=70.0, step=1.0
+            "Blood pressure, diastolic (mmHg)", min_value=30.0, max_value=140.0, value=70.0, step=1.0, format="%g"
         )
 
         c3, c4 = st.columns(2)
         height_cm = c3.number_input("Height (cm)", min_value=100.0, max_value=230.0, value=170.0, step=1.0, format="%.0f")
-        weight_kg = c4.number_input("Weight (kg)", min_value=25.0, max_value=250.0, value=70.0, step=0.5, format="%.1f")
+        weight_kg = c4.number_input("Weight (kg)", min_value=25.0, max_value=250.0, value=70.0, step=0.5, format="%g")
         calculated_bmi = weight_kg / ((height_cm / 100) ** 2)
         st.markdown(f'<p class="bmi-note">Your BMI: <b>{calculated_bmi:.1f}</b></p>', unsafe_allow_html=True)
         age = st.number_input("Age (years)", min_value=1, max_value=120, value=30, step=1)
