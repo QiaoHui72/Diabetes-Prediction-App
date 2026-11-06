@@ -1,0 +1,19 @@
+[theme]
+base = "light"
+primaryColor = "#0a63e8"
+backgroundColor = "#eef5ff"
+secondaryBackgroundColor = "#ffffff"
+textColor = "#14233e"
+borderColor = "#c6d8fb"
+dataframeHeaderBackgroundColor = "#edf4ff"
+dataframeHeaderTextColor = "#14233e"
+
+# Match the page palette even when a visitor chooses dark mode.
+[theme.dark]
+primaryColor = "#0a63e8"
+backgroundColor = "#eef5ff"
+secondaryBackgroundColor = "#ffffff"
+textColor = "#14233e"
+borderColor = "#c6d8fb"
+dataframeHeaderBackgroundColor = "#edf4ff"
+dataframeHeaderTextColor = "#14233e"
