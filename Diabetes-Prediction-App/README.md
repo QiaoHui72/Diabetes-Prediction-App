@@ -38,3 +38,5 @@ For the exact versions used during verification, install `requirements-tested.tx
 Upload the extracted contents of this folder to the same GitHub repository, replacing existing files. Include trained_models.pkl and the updated requirements.txt. Do not upload just the ZIP. Keep app.py as the entrypoint. After dependencies are installed, the app loads the saved models without a tuning search.
 
 For intentional model updates, run `python build_models.py` locally and upload the resulting trained_models.pkl together with diabetes.csv and matching requirements.txt. The app checks the dataset hash and package versions to avoid displaying mismatched scores. Only load model files you trust.
+
+Theme setup: upload `.streamlit/config.toml` at the repository root (the folder name begins with a dot). The app also styles current Streamlit number fields and select boxes explicitly to keep them readable if a viewer selects a dark theme.

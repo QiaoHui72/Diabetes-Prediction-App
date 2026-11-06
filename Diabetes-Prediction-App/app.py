@@ -107,6 +107,38 @@ h1, h2, h3 { color: #101e35; letter-spacing: -.025em; }
     [data-testid="stTabs"] [role="tab"] p { font-size: 17px; }
     .input-tiles { grid-template-columns: repeat(2,1fr); gap: 10px; }
 }
+
+/* Current Streamlit widgets use React Aria rather than BaseWeb. */
+[data-testid="stNumberInputContainer"],
+[data-testid="stSelectbox"] div:has(> input[role="combobox"]),
+[data-testid="stSelectbox"] .react-aria-Group {
+    background: #fff !important; color: #14233e !important;
+    border: 1px solid #c6d8fb !important; border-radius: 16px !important;
+    min-height: 60px; box-shadow: none;
+}
+[data-testid="stNumberInputField"],
+[data-testid="stSelectbox"] input {
+    background: #fff !important; color: #14233e !important;
+    -webkit-text-fill-color: #14233e !important;
+    font-size: 21px !important; padding-left: 18px !important;
+    color-scheme: light;
+}
+[data-testid="stSelectbox"] button {
+    background: #fff !important; color: #14233e !important;
+}
+[data-testid="stNumberInputContainer"]:focus-within,
+[data-testid="stSelectbox"] div:has(> input[role="combobox"]):focus-within {
+    border-color: #0866ee !important; box-shadow: 0 0 0 3px #0866ee15;
+}
+[data-testid="stSelectboxVirtualDropdown"],
+[data-testid="stSelectboxVirtualDropdown"] [role="listbox"],
+[data-testid="stSelectboxVirtualDropdown"] [role="option"] {
+    background: #fff !important; color: #14233e !important;
+}
+[data-testid="stSelectboxVirtualDropdown"] [role="option"][data-focused] {
+    background: #e8f1ff !important;
+}
+[data-testid="stTabs"] [role="tablist"] { border-bottom: none !important; }
 </style>
 """,
     unsafe_allow_html=True,
