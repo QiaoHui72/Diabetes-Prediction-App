@@ -11,6 +11,9 @@ Run:  streamlit run app.py
 """
 import os
 import pickle
+import hashlib
+import importlib.metadata
+from pathlib import Path
 
 import numpy as np
 import pandas as pd
@@ -111,7 +114,7 @@ h1, h2, h3 { color: #101e35; letter-spacing: -.025em; }
 
 DATA_FILE = os.path.join(os.path.dirname(os.path.abspath(__file__)), "diabetes.csv")
 
-from modeling import FEATURES, ZERO_MEANS_MISSING, clean, train_models as fit_models
+from modeling import FEATURES, ZERO_MEANS_MISSING, clean
 import charts
 
 # ----------------------------------------------------------------------------
@@ -137,15 +140,29 @@ def get_data():
     return read_csv(uploaded)
 
 
-@st.cache_resource(show_spinner="Comparing and tuning six models. First launch may take several minutes...")
-def train_models(data, target):
-    return fit_models(data, target)
+@st.cache_resource(show_spinner="Loading saved models...")
+def load_models(bundle_bytes, dataset_bytes):
+    # This bundled file is created by build_models.py, not uploaded by visitors.
+    bundle = pickle.loads(bundle_bytes)
+    if hashlib.sha256(dataset_bytes).hexdigest() != bundle['dataset_sha256']:
+        raise ValueError("The dataset has changed. Run python build_models.py locally and upload the updated trained_models.pkl.")
+    for name, version in bundle['versions'].items():
+        if importlib.metadata.version(name) != version:
+            raise ValueError(f"Install the supplied requirements.txt: {name} must be {version} for these saved models.")
+    return bundle['models']
 
 @st.cache_data(show_spinner=False)
 def dataset_chart(kind, data, columns=None):
     if kind == "pairs":
         return charts.pairs(data, columns)
     return getattr(charts, kind)(data)
+
+@st.cache_data(show_spinner=False)
+def model_chart(kind, bundle_bytes, model_name=None):
+    saved_results = pickle.loads(bundle_bytes)['models'][0]
+    if kind == "confusion":
+        return charts.confusion(saved_results[model_name]['confusion'], model_name)
+    return getattr(charts, kind)(saved_results)
 
 # ----------------------------------------------------------------------------
 # Load data and models
@@ -164,7 +181,14 @@ if missing_cols:
     st.error(f"The dataset is missing these columns: {', '.join(missing_cols)}")
     st.stop()
 
-results, best_name, feature_names = train_models(df, target)
+try:
+    root = Path(__file__).resolve().parent
+    results, best_name, feature_names = load_models(
+        (root / "trained_models.pkl").read_bytes(), (root / "diabetes.csv").read_bytes())
+except (OSError, ValueError) as exc:
+    st.error(f"Could not load saved models: {exc}")
+    st.info("Upload trained_models.pkl, diabetes.csv and requirements.txt from the same updated ZIP. Training is not run on the web server.")
+    st.stop()
 clean_df = clean(df)
 
 tab_predict, tab_data, tab_models = st.tabs(["Predict", "Dataset", "Models"])
@@ -292,9 +316,9 @@ with tab_data:
         [c for c in df.select_dtypes(include="number").columns if c != target],
         default=FEATURES, max_selections=5)
     st.caption("Each point is a record. Blue: no diabetes; orange: diabetes. The diagonal shows distributions. Missing measurements are omitted from the relevant panels.")
-    if len(pair_columns) >= 2:
+    if len(pair_columns) >= 2 and st.checkbox("Show pair plot", value=False):
         st.image(dataset_chart("pairs", df, pair_columns), use_container_width=True)
-    else:
+    elif len(pair_columns) < 2:
         st.info("Choose at least two features to show the pair plot.")
 
 # ----------------------------------------------------------------------------
@@ -321,7 +345,7 @@ with tab_models:
     } for name,r in results.items()])
     st.dataframe(table, hide_index=True)
     st.download_button("Download evaluation results (.csv)", table.to_csv(index=False), "model_evaluation.csv", "text/csv")
-    st.image(charts.comparison(results), use_container_width=True)
+    st.image(model_chart("comparison", (root / "trained_models.pkl").read_bytes()), use_container_width=True)
     st.success(f"Selected by cross-validation: **{best_name}**")
     st.subheader("Confusion matrix")
     pick = st.selectbox("Show for", list(results), index=list(results).index(best_name), key="cm")
@@ -330,12 +354,12 @@ with tab_models:
     m1.metric("Test accuracy", f"{r['test_accuracy']:.1%}")
     m2.metric("Diabetes recall", f"{r['recall']:.1%}")
     m3.metric("Diabetes precision", f"{r['precision']:.1%}")
-    st.image(charts.confusion(r['confusion'],pick), use_container_width=True)
+    st.image(model_chart("confusion", (root / "trained_models.pkl").read_bytes(), pick), use_container_width=True)
     st.caption("Rows are actual outcomes; columns are predictions. False negatives are diabetes records predicted as no diabetes. Recall measures how many actual diabetes records were detected.")
     with st.expander("Selected model settings"):
         st.json(r['best_params'])
     st.subheader("ROC curves")
-    st.image(charts.roc_chart(results), use_container_width=True)
+    st.image(model_chart("roc_chart", (root / "trained_models.pkl").read_bytes()), use_container_width=True)
     st.caption("AUC measures ranking performance across thresholds. The dashed line represents random ranking. Predictions use the original 0.5 probability threshold.")
 
     st.download_button(

@@ -7,7 +7,7 @@ python -m pip install -r requirements.txt
 python -m streamlit run app.py
 ```
 
-Keep all Python files and diabetes.csv together. First launch tunes six models and can take several minutes. Subsequent interactions reuse the in-memory training cache.
+Keep all Python files, trained_models.pkl and diabetes.csv together. The app loads the included tuned models and evaluation results instead of training at startup. Requirements are pinned to the versions used to create the saved models. Use Python 3.12. The pair plot is generated only when Show pair plot is checked; other chart images are cached.
 
 ## Interface
 
@@ -32,3 +32,9 @@ The chosen CV score is a tuning score, not an unbiased estimate of future perfor
 This is a learning project, not medical advice.
 
 For the exact versions used during verification, install `requirements-tested.txt` instead of `requirements.txt`.
+
+## Update your existing Streamlit deployment
+
+Upload the extracted contents of this folder to the same GitHub repository, replacing existing files. Include trained_models.pkl and the updated requirements.txt. Do not upload just the ZIP. Keep app.py as the entrypoint. After dependencies are installed, the app loads the saved models without a tuning search.
+
+For intentional model updates, run `python build_models.py` locally and upload the resulting trained_models.pkl together with diabetes.csv and matching requirements.txt. The app checks the dataset hash and package versions to avoid displaying mismatched scores. Only load model files you trust.
